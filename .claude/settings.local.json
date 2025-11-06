@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet add package:*)",
+      "Bash(dotnet add reference:*)",
+      "Bash(dotnet remove reference:*)",
+      "Bash(dotnet remove:*)",
+      "Bash(dotnet build:*)",
+      "WebFetch(domain:aspire.dev)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

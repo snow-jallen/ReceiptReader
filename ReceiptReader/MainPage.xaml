@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ReceiptReader.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+
+            <Label
+                Text="Receipt Reader"
+                Style="{StaticResource Headline}"
+                SemanticProperties.HeadingLevel="Level1"
+                HorizontalOptions="Center"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Upload a receipt image to extract details"
+                Style="{StaticResource SubHeadline}"
+                SemanticProperties.HeadingLevel="Level2"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="UploadBtn"
+                Text="Upload Receipt Photo"
+                SemanticProperties.Hint="Select a receipt image from your device"
+                Clicked="OnUploadClicked"
+                HorizontalOptions="Fill"
+                Margin="0,20,0,0" />
+
+            <ActivityIndicator
+                x:Name="LoadingIndicator"
+                IsRunning="False"
+                IsVisible="False"
+                Color="{StaticResource Primary}"
+                HeightRequest="50" />
+
+            <Border
+                x:Name="ResultFrame"
+                IsVisible="False"
+                Stroke="{StaticResource Primary}"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 10"
+                Padding="15"
+                Margin="0,20,0,0">
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        Text="Receipt Details"
+                        FontSize="20"
+                        FontAttributes="Bold" />
+
+                    <Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Merchant: " FontAttributes="Bold" />
+                                <Span x:Name="MerchantSpan" Text="" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Date: " FontAttributes="Bold" />
+                                <Span x:Name="DateSpan" Text="" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Total: " FontAttributes="Bold" />
+                                <Span x:Name="TotalSpan" Text="" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label
+                        Text="Line Items:"
+                        FontAttributes="Bold"
+                        Margin="0,10,0,0" />
+
+                    <CollectionView x:Name="LineItemsView">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="5,5,5,5" ColumnDefinitions="*,Auto,Auto">
+                                    <Label
+                                        Grid.Column="0"
+                                        Text="{Binding Description}"
+                                        VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Category}" />
+                                    <Label
+                                        Grid.Column="2"
+                                        VerticalOptions="Center">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Quantity}" />
+                                                <Span Text=" x $" />
+                                                <Span Text="{Binding Price, StringFormat='{0:F2}'}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>                                    
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label
+                x:Name="ErrorLabel"
+                IsVisible="False"
+                TextColor="Red"
+                HorizontalOptions="Center"
+                Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
