@@ -23,6 +23,8 @@ public class LineItem
 public enum Category
 {
     Unknown,
+    FreshProduce,
+    BakedGoods,
     Groceries,
     Clothing,
     AutoRepair,

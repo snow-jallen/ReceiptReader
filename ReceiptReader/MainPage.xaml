@@ -1,122 +1,194 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:ReceiptReader.Models"
+             xmlns:converters="clr-namespace:ReceiptReader.Converters"
              x:Class="ReceiptReader.MainPage">
 
-    <ScrollView>
-        <VerticalStackLayout
-            Padding="30,0"
-            Spacing="25">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:BytesToStreamConverter x:Key="BytesToStreamConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="30,20">
+
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
             <Label
                 Text="Receipt Reader"
                 Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1"
-                HorizontalOptions="Center"
-                Margin="0,20,0,0" />
+                HorizontalOptions="Center" />
 
             <Label
-                Text="Upload a receipt image to extract details"
+                Text="Upload receipt images to extract details"
                 Style="{StaticResource SubHeadline}"
                 SemanticProperties.HeadingLevel="Level2"
                 HorizontalOptions="Center" />
+        </VerticalStackLayout>
 
-            <Button
-                x:Name="UploadBtn"
-                Text="Upload Receipt Photo"
-                SemanticProperties.Hint="Select a receipt image from your device"
-                Clicked="OnUploadClicked"
-                HorizontalOptions="Fill"
-                Margin="0,20,0,0" />
+        <!-- Upload Button -->
+        <Button
+            Grid.Row="1"
+            x:Name="UploadBtn"
+            Text="Select Receipt Photos"
+            SemanticProperties.Hint="Select receipt images from your device"
+            Clicked="OnUploadClicked"
+            HorizontalOptions="Fill"
+            Margin="0,20,0,0" />
 
+        <!-- Loading Indicator and Progress -->
+        <VerticalStackLayout
+            Grid.Row="2"
+            x:Name="LoadingPanel"
+            IsVisible="False"
+            Spacing="10"
+            Margin="0,10,0,0">
             <ActivityIndicator
                 x:Name="LoadingIndicator"
                 IsRunning="False"
-                IsVisible="False"
                 Color="{StaticResource Primary}"
                 HeightRequest="50" />
+            <Label
+                x:Name="ProgressLabel"
+                HorizontalOptions="Center"
+                FontSize="14" />
+            <ProgressBar
+                x:Name="ProgressBar"
+                Progress="0"
+                ProgressColor="{StaticResource Primary}" />
+        </VerticalStackLayout>
 
-            <Border
-                x:Name="ResultFrame"
-                IsVisible="False"
-                Stroke="{StaticResource Primary}"
-                StrokeThickness="2"
-                StrokeShape="RoundRectangle 10"
-                Padding="15"
-                Margin="0,20,0,0">
-                <VerticalStackLayout Spacing="10">
-                    <Label
-                        Text="Receipt Details"
-                        FontSize="20"
-                        FontAttributes="Bold" />
+        <!-- Receipts CollectionView -->
+        <ScrollView Grid.Row="3" Margin="0,20,0,0">
+            <CollectionView
+                x:Name="ReceiptsCollection"
+                IsVisible="False">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ProcessedReceipt">
+                        <!-- Responsive layout: Use Grid with OnSizeAllocated to switch between layouts -->
+                        <Grid x:Name="ResponsiveGrid" SizeChanged="OnReceiptItemSizeChanged" Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                    <Label>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="Merchant: " FontAttributes="Bold" />
-                                <Span x:Name="MerchantSpan" Text="" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
+                            <!-- Image (will be repositioned based on width) -->
+                            <Border
+                                x:Name="ImageBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Stroke="{StaticResource Primary}"
+                                StrokeThickness="2"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5"
+                                Margin="5"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Start">
+                                <Image
+                                    Aspect="AspectFit"
+                                    HeightRequest="400"
+                                    HorizontalOptions="Center"
+                                    Source="{Binding ImageBytes, Converter={StaticResource BytesToStreamConverter}}" />
+                            </Border>
 
-                    <Label>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="Date: " FontAttributes="Bold" />
-                                <Span x:Name="DateSpan" Text="" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-
-                    <Label>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="Total: " FontAttributes="Bold" />
-                                <Span x:Name="TotalSpan" Text="" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-
-                    <Label
-                        Text="Line Items:"
-                        FontAttributes="Bold"
-                        Margin="0,10,0,0" />
-
-                    <CollectionView x:Name="LineItemsView">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Padding="5,5,5,5" ColumnDefinitions="*,Auto,Auto">
+                            <!-- Receipt Details (will be repositioned based on width) -->
+                            <Border
+                                x:Name="DetailsBorder"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Stroke="{StaticResource Primary}"
+                                StrokeThickness="2"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="15"
+                                Margin="5">
+                                <VerticalStackLayout Spacing="10">
                                     <Label
-                                        Grid.Column="0"
-                                        Text="{Binding Description}"
-                                        VerticalOptions="Center" />
-                                    <Label Grid.Column="1"
-                                           Text="{Binding Category}" />
-                                    <Label
-                                        Grid.Column="2"
-                                        VerticalOptions="Center">
+                                        Text="Receipt Details"
+                                        FontSize="20"
+                                        FontAttributes="Bold" />
+
+                                    <Label>
                                         <Label.FormattedText>
                                             <FormattedString>
-                                                <Span Text="{Binding Quantity}" />
-                                                <Span Text=" x $" />
-                                                <Span Text="{Binding Price, StringFormat='{0:F2}'}" />
+                                                <Span Text="Merchant: " FontAttributes="Bold" />
+                                                <Span Text="{Binding Receipt.MerchantName}" />
                                             </FormattedString>
                                         </Label.FormattedText>
-                                    </Label>                                    
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Border>
+                                    </Label>
 
-            <Label
-                x:Name="ErrorLabel"
-                IsVisible="False"
-                TextColor="Red"
-                HorizontalOptions="Center"
-                Margin="0,10,0,0" />
-        </VerticalStackLayout>
-    </ScrollView>
+                                    <Label>
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="Date: " FontAttributes="Bold" />
+                                                <Span Text="{Binding Receipt.TransactionDate, StringFormat='{0:yyyy-MM-dd}'}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+
+                                    <Label>
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="Total: " FontAttributes="Bold" />
+                                                <Span Text="{Binding Receipt.TotalAmount, StringFormat='${0:F2}'}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+
+                                    <Label
+                                        Text="Line Items:"
+                                        FontAttributes="Bold"
+                                        Margin="0,10,0,0" />
+
+                                    <CollectionView ItemsSource="{Binding Receipt.LineItems}">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="local:LineItem">
+                                                <Grid Padding="5" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                                    <Label
+                                                        Grid.Column="0"
+                                                        Text="{Binding Description}"
+                                                        VerticalOptions="Center" />
+                                                    <Label
+                                                        Grid.Column="1"
+                                                        Text="{Binding Category}"
+                                                        VerticalOptions="Center" />
+                                                    <Label
+                                                        Grid.Column="2"
+                                                        VerticalOptions="Center">
+                                                        <Label.FormattedText>
+                                                            <FormattedString>
+                                                                <Span Text="{Binding Quantity}" />
+                                                                <Span Text=" x $" />
+                                                                <Span Text="{Binding Price, StringFormat='{0:F2}'}" />
+                                                            </FormattedString>
+                                                        </Label.FormattedText>
+                                                    </Label>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+
+        <!-- Error Label -->
+        <Label
+            Grid.Row="3"
+            x:Name="ErrorLabel"
+            IsVisible="False"
+            TextColor="Red"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Margin="20" />
+    </Grid>
 
 </ContentPage>
